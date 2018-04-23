@@ -6,6 +6,8 @@ import pickle
 
 class dataload(Dataset):
     def __init__(self,data_path,transform=None):
+        #it accepts the directory as input and read all the pickle files
+        #data_path is the directory path of pickle files
         data=[]
         list_dir = os.listdir(data_path)
         list_dir.sort()
