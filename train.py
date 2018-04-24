@@ -125,8 +125,10 @@ def parse_args(args):
     parser.add_argument('--rolling_effect',      help='Applying rolling effect.', action='store_const', const=True, default=True)
     parser.add_argument('--rolling_data_type',   help='Which data want to use for rolling effect.', type=str, default='TEST')
     parser.add_argument('--keep_train',          help='Keep training on previouse snapshot.', action='store_const', const=True, default=True)
+    parser.add_argument('--pretrain_imagenet',   help='Use pretrained weight on Imagenet.', action='store_const', const=True, default=True)
     parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=1)
     parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='TEST')
+
     return parser.parse_args(args)
 
 
@@ -185,8 +187,9 @@ def main(args=None):
         else: 
             # Scratch Model
             CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.model_setter(model_name, 
-                                                                              args.learning_rate, 
-                                                                              output_size=num_of_class)
+                                                                              learning_rate=args.learning_rate, 
+                                                                              output_size=num_of_class,
+                                                                              usePretrained=args.pretrain_imagenet)
             
             print 'Scratch model'
             # keep training on previouse epoch.
