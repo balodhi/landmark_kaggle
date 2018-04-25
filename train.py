@@ -121,12 +121,19 @@ def parse_args(args):
     
     parser.add_argument('--train_batch_size',    help='Size of the batches for train.', default=128, type=int)
     parser.add_argument('--val_batch_size',      help='Size of the batches for validation.', default=8, type=int)
+    parser.add_argument('--validation',          help='Do Validation.', type=tools.str2bool, nargs='?',const=True, default=True)
+
     parser.add_argument('--learning_rate',       help='Start learning rate.', type=float, default=0.0002)
-    parser.add_argument('--rolling_effect',      help='Applying rolling effect.', action='store_const', const=True, default=True)
-    parser.add_argument('--rolling_data_type',   help='Which data want to use for rolling effect.', type=str, default='TEST')
-    parser.add_argument('--keep_train',          help='Keep training on previouse snapshot.', action='store_const', const=True, default=True)
-    parser.add_argument('--pretrain_imagenet',   help='Use pretrained weight on Imagenet.', action='store_const', const=True, default=True)
-    parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=1)
+    parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=5)
+
+
+    parser.add_argument('--rolling_weight_path',   help='Which data want to use for rolling effect.', type=str, default='TEST')
+    parser.add_argument('--rolling_effect',      help='Applying rolling effect.', type=tools.str2bool, nargs='?',const=True, default=False)
+
+
+    parser.add_argument('--keep_train',          help='Keep training on previouse snapshot.', type=tools.str2bool, nargs='?',const=True, default=True)
+    parser.add_argument('--pretrain_imagenet',   help='Use pretrained weight on Imagenet.', type=tools.str2bool, nargs='?',const=True, default=True)
+
     parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='TEST')
 
     return parser.parse_args(args)
@@ -138,12 +145,19 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
     
-    print args.rolling_effect
     # Make snapshot directory
     tools.directoryMake(path_cfg.snapshot_root_path)
     
+
+    # Divide pickle file and make new file and set train, val path seperatly.
+    if args.validation:
+        train_dir, val_dir = tools.divideDataset(os.path.join(path_cfg.data_root_path, args.data_type))
+    else:
+        train_dir = os.path.join(path_cfg.data_root_path, args.data_type)
+        val_dir = os.path.join(path_cfg.data_root_path, args.data_type)        
+
+
     # Make Train, Val data_loader
-    train_dir = os.path.join(path_cfg.data_root_path, args.data_type)
     train_data = dataload_bilal.dataload(train_dir, transforms.Compose([
                 #transforms.Resize(224),
                 #transforms.RandomSizedCrop(224),
@@ -154,7 +168,7 @@ def main(args=None):
     train_loader = data.DataLoader(train_data, batch_size=args.train_batch_size,
                                 shuffle=True,drop_last=False)
 
-    val_dir = os.path.join(path_cfg.data_root_path, args.data_type)
+
     val_data = dataload_bilal.dataload(val_dir, transforms.Compose([
                 #transforms.Resize(224),
                 #transforms.RandomSizedCrop(224),
@@ -174,17 +188,24 @@ def main(args=None):
 
 
     for model_idx, model_name in enumerate(model_name_list):
+        if args.rolling_effect:
+            save_model_name = model_name +'_'+ args.data_type + '_rew'
+        else:
+            save_model_name = model_name +'_'+ args.data_type
+
         # To apply rolling effect
-        rolling_weight_path = os.path.join(path_cfg.snapshot_root_path, model_name +'_'+ args.rolling_data_type + '.pth.tar')
-        if args.rolling_effect and os.path.exists(rolling_weight_path):
+        rw_path = os.path.join(path_cfg.snapshot_root_path, args.rolling_weight_path)
+        if args.rolling_effect and os.path.exists(rw_path):
+            print 'Rolling Effect is applied.'
             # Load model weight trained on rolling data
-            CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.rollingWeightLoader(args.data_type, 
+            CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.rollingWeightLoader(rw_path, 
                                                                                             model_name, 
                                                                                             args.learning_rate)
             # This module gonna change last output size for prediction
             # Because the number of rolling data classes and training data classes are different.
             CNN_model = models.pretrained_model_converter(CNN_model, num_of_class)
         else: 
+            print 'Rolling Effect is not applied.' 
             # Scratch Model
             CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.model_setter(model_name, 
                                                                               learning_rate=args.learning_rate, 
@@ -194,9 +215,9 @@ def main(args=None):
             print 'Scratch model'
             # keep training on previouse epoch.
             if args.keep_train:
-                print 'Keep training on previouse weight'
-                checkpoint_path = os.path.join(path_cfg.snapshot_root_path, model_name +'_'+ args.data_type + '.pth.tar')
+                checkpoint_path = os.path.join(path_cfg.snapshot_root_path, save_model_name + '.pth.tar')
                 if os.path.exists(checkpoint_path):
+                    print 'Keep training on previouse epoch'
                     checkpoint = torch.load(checkpoint_path)
                     CNN_model.load_state_dict(checkpoint['state_dict'])
     
@@ -221,11 +242,13 @@ def main(args=None):
                 'state_dict': CNN_model.state_dict(),
                 'best_prec1': best_prec1,
             }, is_best
-            , model_name +'_'+ args.data_type)
+            , save_model_name)
         
         print 'Best Performance : ', best_prec1
 
-
+    print 
+    print 
+    print 
 
 
 if __name__ == '__main__':

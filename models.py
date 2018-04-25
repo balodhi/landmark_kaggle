@@ -21,7 +21,10 @@ import path as path_cfg
 from torch.optim import lr_scheduler
 
 def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=True, isTest=False):
-    print model_name
+    print 'Model Name : ', model_name
+    print 'Use Pretrained Weights: ',  usePretrained
+    print 
+
     
     if model_name == 'resnet18':
         model = models.resnet18(pretrained=usePretrained)
@@ -94,8 +97,7 @@ def pretrained_model_converter(model, new_output_size):
     model.module.fc = nn.Linear(num_ftrs, new_output_size).cuda()
     return model
 
-def rollingWeightLoader(data_type, model_name, learning_rate):
-    checkpoint_path = os.path.join(path_cfg.snapshot_root_path, model_name +'_'+ data_type + '.pth.tar')
+def rollingWeightLoader(checkpoint_path, model_name, learning_rate):
     if os.path.exists(checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
         num_of_class = checkpoint['state_dict']['module.fc.weight'].shape[0]
@@ -105,6 +107,6 @@ def rollingWeightLoader(data_type, model_name, learning_rate):
     
         CNN_model.load_state_dict(checkpoint['state_dict'])
         print 'Rolling Model Applied'
-        print '    previous datatype : ', data_type
+        print '    previous weight path : ', checkpoint_path
         print '    previous # of classes : ', num_of_class
         return CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler
