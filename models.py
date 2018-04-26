@@ -8,6 +8,7 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
+from EnsembleDropout import *
 
 import torch.nn.init as init
 from torch.utils.data import DataLoader
@@ -94,7 +95,9 @@ def load_checkpoint(model, path):
 
 def pretrained_model_converter(model, new_output_size):
     num_ftrs = model.module.fc.in_features
-    model.module.fc = nn.Linear(num_ftrs, new_output_size).cuda()
+    en = EnsembleDropout()
+    model_conv.fc = nn.Sequential(en, nn.Linear(num_ftrs, n_class)).cuda()
+    #model.module.fc = nn.Linear(num_ftrs, new_output_size).cuda()
     return model
 
 def rollingWeightLoader(checkpoint_path, model_name, learning_rate):
