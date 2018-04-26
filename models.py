@@ -107,13 +107,13 @@ def pretrained_model_converter(model, new_output_size,dropouts):
         model.module.fc = nn.Linear(num_ftrs, new_output_size).cuda()
     return model
 
-def rollingWeightLoader(checkpoint_path, model_name, learning_rate):
+def rollingWeightLoader(checkpoint_path, model_name, learning_rate,dropouts=True):
     if os.path.exists(checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
         num_of_class = checkpoint['state_dict']['module.fc.weight'].shape[0]
         CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = model_setter(model_name, 
                                                                           learning_rate, 
-                                                                          output_size=num_of_class)
+                                                                          output_size=num_of_class,dropouts=True)
     
         CNN_model.load_state_dict(checkpoint['state_dict'])
         print 'Rolling Model Applied'
