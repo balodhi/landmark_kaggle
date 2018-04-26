@@ -166,6 +166,10 @@ def main(args=None):
     print ('pretrain_imagenet : ', args.pretrain_imagenet)
     print ('train_batch_size : ', args.train_batch_size)
     print ('val_batch_size : ', args.val_batch_size)
+    
+    
+    mean =[0.4606, 0.4737, 0.4678]
+    std = [0.0143, 0.0170, 0.0235]
 
 
 
@@ -191,6 +195,7 @@ def main(args=None):
                 #transforms.Resize(299),
                 #transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
+                transforms.Normalize(mean,std)
                 ]))
     train_loader = data.DataLoader(train_data, batch_size=args.train_batch_size,
                                 shuffle=True,drop_last=False)
@@ -202,6 +207,7 @@ def main(args=None):
                 #transforms.Resize(299),
                 #transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
+                transforms.Normalize(mean,std)
                 ]))
     val_loader = data.DataLoader(val_data, batch_size=args.val_batch_size,
                                 shuffle=False,drop_last=False)
