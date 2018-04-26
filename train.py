@@ -136,6 +136,16 @@ def parse_args(args):
 
     parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='TEST')
 
+
+
+
+
+
+
+
+
+
+
     return parser.parse_args(args)
 
 
@@ -144,6 +154,22 @@ def main(args=None):
     if args is None:
         args = sys.argv[1:]
     args = parse_args(args)
+
+    print 'data_type : ', args.data_type
+    print 'learning_rate : ', args.learning_rate
+    print 'validation : ', args.validation
+    print 'epochs : ', args.epochs
+    print 'rolling_effect : ', args.rolling_effect
+    print 'rolling_weight_path : ', args.rolling_weight_path
+    print 'keep_train : ', args.keep_train
+    print 'pretrain_imagenet : ', args.pretrain_imagenet
+    print 'train_batch_size : ', args.train_batch_size
+    print 'val_batch_size : ', args.val_batch_size
+
+
+
+
+
     
     # Make snapshot directory
     tools.directoryMake(path_cfg.snapshot_root_path)
@@ -188,6 +214,7 @@ def main(args=None):
 
 
     for model_idx, model_name in enumerate(model_name_list):
+        
         if args.rolling_effect:
             save_model_name = model_name +'_'+ args.data_type + '_rew'
         else:
