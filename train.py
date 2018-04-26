@@ -135,6 +135,7 @@ def parse_args(args):
     parser.add_argument('--pretrain_imagenet',   help='Use pretrained weight on Imagenet.', type=tools.str2bool, nargs='?',const=True, default=True)
 
     parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='TEST')
+    parser.add_argument('--dropouts',      help='Apply multiple dropouts', type=tools.str2bool, nargs='?',const=True, default=True)
 
 
 
@@ -227,7 +228,7 @@ def main(args=None):
             # Load model weight trained on rolling data
             CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.rollingWeightLoader(rw_path, 
                                                                                             model_name, 
-                                                                                            args.learning_rate)
+                                                                                            args.learning_rate,args.droputs)
             # This module gonna change last output size for prediction
             # Because the number of rolling data classes and training data classes are different.
             CNN_model = models.pretrained_model_converter(CNN_model, num_of_class)
@@ -237,7 +238,7 @@ def main(args=None):
             CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.model_setter(model_name, 
                                                                               learning_rate=args.learning_rate, 
                                                                               output_size=num_of_class,
-                                                                              usePretrained=args.pretrain_imagenet)
+                                                                              usePretrained=args.pretrain_imagenet,dropouts=args.droputs)
             
             print 'Scratch model'
             # keep training on previouse epoch.
