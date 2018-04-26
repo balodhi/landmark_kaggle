@@ -31,6 +31,7 @@ def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=T
         num_ftrs = model.fc.in_features
         
         if dropouts:
+            print("Applying Dropouts at last layer")
             en = EnsembleDropout()
             model.fc = nn.Sequential(en, nn.Linear(num_ftrs, output_size))
         else:
