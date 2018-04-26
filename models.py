@@ -30,7 +30,11 @@ def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=T
     if model_name == 'resnet18':
         model = models.resnet18(pretrained=usePretrained)
         num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, output_size)
+        
+        
+        en = EnsembleDropout()
+        model.fc = nn.Sequential(en, nn.Linear(num_ftrs, output_size))
+        #model.fc = nn.Linear(num_ftrs, output_size)
     elif model_name == 'resnet34':
         model = models.resnet34(pretrained=usePretrained)
         num_ftrs = model.fc.in_features
@@ -96,7 +100,7 @@ def load_checkpoint(model, path):
 def pretrained_model_converter(model, new_output_size):
     num_ftrs = model.module.fc.in_features
     en = EnsembleDropout()
-    model_conv.fc = nn.Sequential(en, nn.Linear(num_ftrs, n_class)).cuda()
+    model.module.fc = nn.Sequential(en, nn.Linear(num_ftrs, n_class)).cuda()
     #model.module.fc = nn.Linear(num_ftrs, new_output_size).cuda()
     return model
 
