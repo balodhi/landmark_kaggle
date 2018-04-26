@@ -51,11 +51,11 @@ def divideDataset(data_path):
     val_path = os.path.join(data_path, 'val')    
 
     if os.path.exists(os.path.join(data_path, 'train', 'train.pickle')) and os.path.exists(os.path.join(data_path, 'val', 'val.pickle')):
-        print 'Training and Validation files already exists.'
+        print ('Training and Validation files already exists.')
         return train_path, val_path
 
 
-    print 'Now training and validation sets are producing. Wait..'
+    print ('Now training and validation sets are producing. Wait..')
     data=[]
     list_dir = os.listdir(data_path)
     list_dir.sort()
