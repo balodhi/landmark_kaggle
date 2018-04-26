@@ -21,7 +21,7 @@ import path as path_cfg
 
 from torch.optim import lr_scheduler
 
-def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=True, isTest=False):
+def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=True, isTest=False, dropouts=True):
     print 'Model Name : ', model_name
     print 'Use Pretrained Weights: ',  usePretrained
     print 
@@ -31,10 +31,11 @@ def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=T
         model = models.resnet18(pretrained=usePretrained)
         num_ftrs = model.fc.in_features
         
-        
-        en = EnsembleDropout()
-        model.fc = nn.Sequential(en, nn.Linear(num_ftrs, output_size))
-        #model.fc = nn.Linear(num_ftrs, output_size)
+        if dropouts:
+            en = EnsembleDropout()
+            model.fc = nn.Sequential(en, nn.Linear(num_ftrs, output_size))
+        else:
+            model.fc = nn.Linear(num_ftrs, output_size)
     elif model_name == 'resnet34':
         model = models.resnet34(pretrained=usePretrained)
         num_ftrs = model.fc.in_features
@@ -97,11 +98,13 @@ def load_checkpoint(model, path):
         print 'no check point'
     return model
 
-def pretrained_model_converter(model, new_output_size):
+def pretrained_model_converter(model, new_output_size,dropouts):
     num_ftrs = model.module.fc.in_features
-    en = EnsembleDropout()
-    model.module.fc = nn.Sequential(en, nn.Linear(num_ftrs, n_class)).cuda()
-    #model.module.fc = nn.Linear(num_ftrs, new_output_size).cuda()
+    if dropouts:
+        en = EnsembleDropout()
+        model.module.fc = nn.Sequential(en, nn.Linear(num_ftrs, n_class)).cuda()
+    else:
+        model.module.fc = nn.Linear(num_ftrs, new_output_size).cuda()
     return model
 
 def rollingWeightLoader(checkpoint_path, model_name, learning_rate):
