@@ -1,6 +1,6 @@
 import os
 import pickle
-import shutile
+import shutil
 from random import shuffle
 
 class AverageMeter(object):

@@ -98,25 +98,31 @@ def load_checkpoint(model, path):
         print ('no check point')
     return model
 
-def pretrained_model_converter(model, new_output_size,dropouts):
-    num_ftrs = model.module.fc.in_features
+def __pretrained_model_converter(model, new_output_size, dropouts):
     if dropouts:
+        num_ftrs = model.module.fc[1].in_features
         en = EnsembleDropout()
-        model.module.fc = nn.Sequential(en, nn.Linear(num_ftrs, n_class)).cuda()
+        model.module.fc = nn.Sequential(en, nn.Linear(num_ftrs, new_output_size)).cuda()
     else:
+        num_ftrs = model.module.fc.in_features
         model.module.fc = nn.Linear(num_ftrs, new_output_size).cuda()
     return model
 
-def rollingWeightLoader(checkpoint_path, model_name, learning_rate,dropouts=True):
+def rollingWeightLoader(checkpoint_path, model_name, learning_rate, new_num_of_class, dropouts=True):
     if os.path.exists(checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
-        num_of_class = checkpoint['state_dict']['module.fc.weight'].shape[0]
+        if dropouts:
+            num_of_class = checkpoint['state_dict']['module.fc.1.weight'].shape[0]
+        else:
+            num_of_class = checkpoint['state_dict']['module.fc.weight'].shape[0]
         CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = model_setter(model_name, 
                                                                           learning_rate, 
-                                                                          output_size=num_of_class,dropouts=True)
-    
+                                                                          output_size=num_of_class, dropouts=dropouts)
+
         CNN_model.load_state_dict(checkpoint['state_dict'])
-        print ('Rolling Model Applied')
-        print ('    previous weight path : ', checkpoint_path)
-        print ('    previous # of classes : ', num_of_class)
+
+        # This module gonna change last output size for prediction
+        # Because the number of rolling data classes and training data classes are different.
+        __pretrained_model_converter(CNN_model, new_num_of_class, dropouts)
+
         return CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler

@@ -159,8 +159,9 @@ def main(args=None):
     print ('pretrain_imagenet : ', args.pretrain_imagenet)
     print ('train_batch_size : ', args.train_batch_size)
     print ('val_batch_size : ', args.val_batch_size)
-    
-    
+    print ('shuffle_pickle : ', args.shuffle_pickle)
+    print ('remove_pickle : ', args.remove_pickle)    
+    print ('dropouts : ', args.dropouts)    
     mean =[0.4606, 0.4737, 0.4678]
     std = [0.0143, 0.0170, 0.0235]
 
@@ -179,6 +180,7 @@ def main(args=None):
     else:
         train_dir = os.path.join(path_cfg.data_root_path, args.data_type)
         val_dir = os.path.join(path_cfg.data_root_path, args.data_type)        
+
 
 
     # Make Train, Val data_loader
@@ -227,10 +229,9 @@ def main(args=None):
             # Load model weight trained on rolling data
             CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.rollingWeightLoader(rw_path, 
                                                                                             model_name, 
-                                                                                            args.learning_rate,args.dropouts)
-            # This module gonna change last output size for prediction
-            # Because the number of rolling data classes and training data classes are different.
-            CNN_model = models.pretrained_model_converter(CNN_model, num_of_class)
+                                                                                            args.learning_rate,
+                                                                                            num_of_class,
+                                                                                            args.dropouts)
         else: 
             print ('Rolling Effect is not applied.' )
             # Scratch Model
@@ -272,7 +273,8 @@ def main(args=None):
             , save_model_name)
         
         print ('Best Performance : ', best_prec1) 
-        if args.remove_pickle:
+        print ('\n\n\n')
+        if args.validation and args.remove_pickle:
             tools.remove_files(train_dir)
             tools.remove_files(val_dir)
 
