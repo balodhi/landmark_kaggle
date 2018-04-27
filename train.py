@@ -127,7 +127,7 @@ def parse_args(args):
     parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=10)
 
 
-    parser.add_argument('--rolling_weight_path',   help='Which data want to use for rolling effect.', type=str, default='TEST')
+    parser.add_argument('--rolling_weight_path', help='Which data want to use for rolling effect.', type=str, default='TEST')
     parser.add_argument('--rolling_effect',      help='Applying rolling effect.', type=tools.str2bool, nargs='?',const=True, default=False)
 
 
@@ -135,15 +135,9 @@ def parse_args(args):
     parser.add_argument('--pretrain_imagenet',   help='Use pretrained weight on Imagenet.', type=tools.str2bool, nargs='?',const=True, default=True)
 
     parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='TEST')
-
-
-
-
-
-
-
-
-
+    parser.add_argument('--dropouts',            help='Apply multiple dropouts', type=tools.str2bool, nargs='?',const=True, default=True)
+    parser.add_argument('--shuffle_pickle',      help='Apply shuffle when make pickles', type=tools.str2bool, nargs='?',const=True, default=False)
+    parser.add_argument('--remove_pickle',       help='Remove pikles(train, val) after training.', type=tools.str2bool, nargs='?',const=True, default=True)
 
 
     return parser.parse_args(args)
@@ -155,16 +149,20 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
-    print 'data_type : ', args.data_type
-    print 'learning_rate : ', args.learning_rate
-    print 'validation : ', args.validation
-    print 'epochs : ', args.epochs
-    print 'rolling_effect : ', args.rolling_effect
-    print 'rolling_weight_path : ', args.rolling_weight_path
-    print 'keep_train : ', args.keep_train
-    print 'pretrain_imagenet : ', args.pretrain_imagenet
-    print 'train_batch_size : ', args.train_batch_size
-    print 'val_batch_size : ', args.val_batch_size
+    print ('data_type : ', args.data_type)
+    print ('learning_rate : ', args.learning_rate)
+    print ('validation : ', args.validation)
+    print ('epochs : ', args.epochs)
+    print ('rolling_effect : ', args.rolling_effect)
+    print ('rolling_weight_path : ', args.rolling_weight_path)
+    print ('keep_train : ', args.keep_train)
+    print ('pretrain_imagenet : ', args.pretrain_imagenet)
+    print ('train_batch_size : ', args.train_batch_size)
+    print ('val_batch_size : ', args.val_batch_size)
+    
+    
+    mean =[0.4606, 0.4737, 0.4678]
+    std = [0.0143, 0.0170, 0.0235]
 
 
 
@@ -177,7 +175,7 @@ def main(args=None):
 
     # Divide pickle file and make new file and set train, val path seperatly.
     if args.validation:
-        train_dir, val_dir = tools.divideDataset(os.path.join(path_cfg.data_root_path, args.data_type))
+        train_dir, val_dir = tools.divideDataset(os.path.join(path_cfg.data_root_path, args.data_type), args.shuffle_pickle)
     else:
         train_dir = os.path.join(path_cfg.data_root_path, args.data_type)
         val_dir = os.path.join(path_cfg.data_root_path, args.data_type)        
@@ -190,6 +188,7 @@ def main(args=None):
                 #transforms.Resize(299),
                 #transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
+                transforms.Normalize(mean,std)
                 ]))
     train_loader = data.DataLoader(train_data, batch_size=args.train_batch_size,
                                 shuffle=True,drop_last=False)
@@ -201,6 +200,7 @@ def main(args=None):
                 #transforms.Resize(299),
                 #transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
+                transforms.Normalize(mean,std)
                 ]))
     val_loader = data.DataLoader(val_data, batch_size=args.val_batch_size,
                                 shuffle=False,drop_last=False)
@@ -223,28 +223,28 @@ def main(args=None):
         # To apply rolling effect
         rw_path = os.path.join(path_cfg.snapshot_root_path, args.rolling_weight_path)
         if args.rolling_effect and os.path.exists(rw_path):
-            print 'Rolling Effect is applied.'
+            print ('Rolling Effect is applied.')
             # Load model weight trained on rolling data
             CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.rollingWeightLoader(rw_path, 
                                                                                             model_name, 
-                                                                                            args.learning_rate)
+                                                                                            args.learning_rate,args.dropouts)
             # This module gonna change last output size for prediction
             # Because the number of rolling data classes and training data classes are different.
             CNN_model = models.pretrained_model_converter(CNN_model, num_of_class)
         else: 
-            print 'Rolling Effect is not applied.' 
+            print ('Rolling Effect is not applied.' )
             # Scratch Model
             CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.model_setter(model_name, 
                                                                               learning_rate=args.learning_rate, 
                                                                               output_size=num_of_class,
-                                                                              usePretrained=args.pretrain_imagenet)
+                                                                              usePretrained=args.pretrain_imagenet,dropouts=args.dropouts)
             
-            print 'Scratch model'
+            print ('Scratch model')
             # keep training on previouse epoch.
             if args.keep_train:
                 checkpoint_path = os.path.join(path_cfg.snapshot_root_path, save_model_name + '.pth.tar')
                 if os.path.exists(checkpoint_path):
-                    print 'Keep training on previouse epoch'
+                    print ('Keep training on previouse epoch')
                     checkpoint = torch.load(checkpoint_path)
                     CNN_model.load_state_dict(checkpoint['state_dict'])
     
@@ -258,7 +258,7 @@ def main(args=None):
             
             # Learning rate scheduler 
             CNN_scheduler.step()
-            print '    lr : ', CNN_scheduler.get_lr()
+            print ('    lr : ', CNN_scheduler.get_lr())
             
             
             # Model weight will be saved based on it's validation performance
@@ -271,11 +271,10 @@ def main(args=None):
             }, is_best
             , save_model_name)
         
-        print 'Best Performance : ', best_prec1
-
-    print 
-    print 
-    print 
+        print ('Best Performance : ', best_prec1) 
+        if args.remove_pickle:
+            tools.remove_files(train_dir)
+            tools.remove_files(val_dir)
 
 
 if __name__ == '__main__':

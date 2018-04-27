@@ -1,5 +1,6 @@
 import os
 import pickle
+import shutile
 from random import shuffle
 
 class AverageMeter(object):
@@ -46,16 +47,16 @@ def directoryMake(path):
         os.mkdir(path)
     
 
-def divideDataset(data_path):
+def divideDataset(data_path, doShuffle=False):
     train_path = os.path.join(data_path, 'train')  
     val_path = os.path.join(data_path, 'val')    
 
     if os.path.exists(os.path.join(data_path, 'train', 'train.pickle')) and os.path.exists(os.path.join(data_path, 'val', 'val.pickle')):
-        print 'Training and Validation files already exists.'
+        print ('Training and Validation files already exists.')
         return train_path, val_path
 
 
-    print 'Now training and validation sets are producing. Wait..'
+    print ('Now training and validation sets are producing. Wait..')
     data=[]
     list_dir = os.listdir(data_path)
     list_dir.sort()
@@ -81,7 +82,8 @@ def divideDataset(data_path):
     pickle_train_list = []
     pickle_val_list = []
     for key in pickle_dict_All:
-        shuffle(pickle_dict_All[key])
+        if doShuffle:
+            shuffle(pickle_dict_All[key])
 
 
         for i in range(len(pickle_dict_All[key])):
@@ -102,6 +104,11 @@ def divideDataset(data_path):
         pickle.dump(pickle_val_list, f)                    
                   
     return train_path, val_path
+
+
+
+def remove_files(path):
+    shutil.rmtree(path)
     
 
 
