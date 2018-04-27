@@ -1,3 +1,9 @@
+python train.py --data_type '801' --rolling_effect True --rolling_weight_path 'resnet18_901_rew.pth.tar' --keep_train False --epoch 1
+
+
+
+
+
 python train.py --data_type '1001' --pretrain_imagenet False
 python train.py --data_type '1001' --rolling_effect True
 python train.py --data_type '901' --pretrain_imagenet False
