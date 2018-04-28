@@ -1,6 +1,6 @@
 | Dataset | Without Pretrained Weight | With Pretrained Weight | With Rolling Effect | # of Images | # of Classes | RMKS |
 |-----:|:------:|:--------:|:------:|:------:|:------:|:------:|
-| >1001 | -      | -        | -      |-      |-      | | 
+| >1001 | -      | 97.89       | -      |-      |117     ||
 | 1001 | 89.01  | 98.65    | -      |-      |-      || 
 | 901  | 89.43  | -        | 98.62  |-      |-      || 
 | 801  | 88.72  | -        | 97.37  |-      |-      || 
