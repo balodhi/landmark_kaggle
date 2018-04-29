@@ -1,4 +1,5 @@
 * Simple way
+
 | Dataset | Without Pretrained Weight | With Pretrained Weight | With Rolling Effect | # of Images | # of Classes | RMKS |
 |-----:|:------:|:--------:|:------:|:------:|:------:|:------:|
 | >1001 | -      | 97.89       | -      |-      |117     ||
@@ -26,6 +27,7 @@
 
 
 * Dropout_applied
+
 | Dataset | Without Pretrained Weight | With Pretrained Weight | With Rolling Effect | # of Images | # of Classes | RMKS |
 |-----:|:------:|:--------:|:------:|:------:|:------:|:------:|
 | >1001 | -     | -       | -      |-      |117     ||
