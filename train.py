@@ -3,6 +3,7 @@ import torch.utils.data as data
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 import torchvision.transforms as transforms
+import torchvision.datasets as ds
 from torch.autograd import Variable
 import torch.nn.parallel
 
@@ -15,6 +16,7 @@ import argparse
 import models
 import tools
 import dataload as dataload_bilal
+#import dataload_files as dataload_bilal
 import path as path_cfg
 
 model_name_list = ['resnet18']
@@ -120,7 +122,7 @@ def parse_args(args):
     parser     = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
     
     parser.add_argument('--train_batch_size',    help='Size of the batches for train.', default=128, type=int)
-    parser.add_argument('--val_batch_size',      help='Size of the batches for validation.', default=8, type=int)
+    parser.add_argument('--val_batch_size',      help='Size of the batches for validation.', default=128, type=int)
     parser.add_argument('--validation',          help='Do Validation.', type=tools.str2bool, nargs='?',const=True, default=True)
 
     parser.add_argument('--learning_rate',       help='Start learning rate.', type=float, default=0.0002)
@@ -191,21 +193,39 @@ def main(args=None):
                 transforms.RandomSizedCrop(224),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomVerticalFlip(),
+                #transforms.Resize(299),
+                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean,std)
                 ]))
+    num_of_class = train_data.nClasses()
+    train_data = ds.ImageFolder('../11/AugmentedTrainingSet/' , transforms.Compose([
+           #transforms.Resize(256),
+           transforms.RandomResizedCrop(224),
+           transforms.RandomHorizontalFlip(),
+           transforms.ToTensor(),
+           ]))
+
     train_loader = data.DataLoader(train_data, batch_size=args.train_batch_size,
                                 shuffle=True,drop_last=False)
 
 
-    val_data = dataload_bilal.dataload(val_dir, transforms.Compose([
-                #transforms.Resize(224),
-                #transforms.RandomSizedCrop(224),
-                #transforms.Resize(299),
-                #transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
-                transforms.Normalize(mean,std)
-                ]))
+#    val_data = dataload_bilal.dataload(val_dir, transforms.Compose([
+#                #transforms.Resize(299),
+#                #transforms.RandomSizedCrop(224),
+#                #transforms.Resize(299),
+#                #transforms.RandomHorizontalFlip(),
+#                transforms.ToTensor(),
+#                transforms.Normalize(mean,std)
+#                ]))
+    
+    val_data = ds.ImageFolder('../11/validation/' , transforms.Compose([
+           #transforms.Resize(256),
+#           transforms.RandomResizedCrop(224),
+#           transforms.RandomHorizontalFlip(),
+           transforms.ToTensor(),
+           ]))
+
     val_loader = data.DataLoader(val_data, batch_size=args.val_batch_size,
                                 shuffle=False,drop_last=False)
 
@@ -213,7 +233,9 @@ def main(args=None):
     
     
     # Finally we got num_of_classes
-    num_of_class = train_data.nClasses()
+    #num_of_class = train_data.nClasses()
+
+
 
     print ('----------------Data-------------------')
     print ('num_of_class : ', num_of_class)
