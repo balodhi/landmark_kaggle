@@ -22,8 +22,6 @@ import path as path_cfg
 from torch.optim import lr_scheduler
 
 def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=True, isTest=False, dropouts=True):
-    print ('Model Name : ', model_name)
-    print ('Use Pretrained Weights: ',  usePretrained)
 
     
     if model_name == 'resnet18':
@@ -31,7 +29,6 @@ def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=T
         num_ftrs = model.fc.in_features
         
         if dropouts:
-            print("Applying Dropouts at last layer")
             en = EnsembleDropout()
             model.fc = nn.Sequential(en, nn.Linear(num_ftrs, output_size))
         else:
@@ -124,5 +121,21 @@ def rollingWeightLoader(checkpoint_path, model_name, learning_rate, new_num_of_c
         # This module gonna change last output size for prediction
         # Because the number of rolling data classes and training data classes are different.
         __pretrained_model_converter(CNN_model, new_num_of_class, dropouts)
+
+        return CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler
+
+def test_model_loader(checkpoint_path, model_name, dropouts=False):
+    if os.path.exists(checkpoint_path):
+        checkpoint = torch.load(checkpoint_path)
+        if dropouts:
+            num_of_class = checkpoint['state_dict']['module.fc.1.weight'].shape[0]
+        else:
+            num_of_class = checkpoint['state_dict']['module.fc.weight'].shape[0]
+        CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = model_setter(model_name, 
+                                                                                     output_size=num_of_class,
+                                                                                     isTest=True, 
+                                                                                     dropouts=dropouts)
+
+        CNN_model.load_state_dict(checkpoint['state_dict'])
 
         return CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler
