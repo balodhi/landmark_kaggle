@@ -149,6 +149,7 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
+    print ('--------------Arguments----------------')
     print ('data_type : ', args.data_type)
     print ('learning_rate : ', args.learning_rate)
     print ('validation : ', args.validation)
@@ -162,6 +163,7 @@ def main(args=None):
     print ('shuffle_pickle : ', args.shuffle_pickle)
     print ('remove_pickle : ', args.remove_pickle)    
     print ('dropouts : ', args.dropouts)    
+    print ('---------------------------------------')
     mean =[0.4606, 0.4737, 0.4678]
     std = [0.0143, 0.0170, 0.0235]
 
@@ -185,10 +187,10 @@ def main(args=None):
 
     # Make Train, Val data_loader
     train_data = dataload_bilal.dataload(train_dir, transforms.Compose([
-                #transforms.Resize(224),
-                #transforms.RandomSizedCrop(224),
-                #transforms.Resize(299),
-                #transforms.RandomHorizontalFlip(),
+                transforms.Resize(299),
+                transforms.RandomSizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomVerticalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean,std)
                 ]))
@@ -213,7 +215,10 @@ def main(args=None):
     # Finally we got num_of_classes
     num_of_class = train_data.nClasses()
 
-
+    print ('----------------Data-------------------')
+    print ('num_of_class : ', num_of_class)
+    print ('num_of_images : ', len(train_data))
+    print ('---------------------------------------\n\n')
 
     for model_idx, model_name in enumerate(model_name_list):
         
