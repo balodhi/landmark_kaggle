@@ -135,13 +135,12 @@ def test(data_loader, net, criterion):
 	        acc.update(prec1[0], images.size(0))
 
 
-        #if (i + 1) % 10 == 0:
-        print('Step [%d], Loss: %.4f'
-                  % (i + 1, loss.data[0]))
-        print('Accuracy : ', (prec1.cpu().data.numpy()[0]))
-        print('Accuracy (All): ', acc.avg.cpu().data.numpy()[0])
-        print('Losses (All): ', losses.avg)
-        print()
+    #if (i + 1) % 10 == 0:
+    print('Step [%d], Loss: %.4f' % (i + 1, loss.data[0]))
+    print('Accuracy : ', (prec1.cpu().data.numpy()[0]))
+    print('Accuracy (All): ', acc.avg.cpu().data.numpy()[0])
+    print('Losses (All): ', losses.avg)
+    print()
     f.close()
     return acc.avg
 
