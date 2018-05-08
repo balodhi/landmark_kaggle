@@ -19,10 +19,10 @@ import Tools.tools as tools
 input_size = 14951
 hidden_size = 8000
 num_classes = 14951
-batch_size = 1000
+batch_size = 1
 
 
-
+'''
 #val_dataset = dt.dataload_val('/hdd1/data_set/val/', '/hdd1/data_set/sorted/sorted_val_11.txt', '/hdd1/data_set/encoded_label.pickle', 'val',5)
 val_dataset = dt.dataload_val('/media/hwejin/SSD_1/DATA/temp_pickles', 
 	'/media/hwejin/SSD_1/DATA/temp_pickles/sorted/sorted_val_11.txt', 
@@ -31,7 +31,7 @@ val_loader = torch.utils.data.DataLoader(dataset=val_dataset,
                                            batch_size=batch_size,
                                            shuffle=False)
 
-
+'''
 test_dataset = dt.dataload_val('/media/hwejin/SSD_1/DATA/temp_pickles', 
 	'/media/hwejin/SSD_1/DATA/temp_pickles/sorted/sorted_val_11.txt', 
 	'/media/hwejin/SSD_1/DATA/temp_pickles/encoded_label.pickle', 'val',5)
@@ -105,31 +105,34 @@ def test(data_loader, net, criterion):
     loop = len(data_loader)
     
     
-    
+    skip_images = [1, 2]
     f = open('out.txt', 'w')
     f.write('id,landmarks\n')
     for i, (images, labels) in enumerate(data_loader):
-        images = Variable(images.view(-1, 14951)).cuda()
-        labels = Variable(labels).cuda()
+
+    	if i in skip_images:
+            f.write(str(idx) + ', \n')
+        else:  
+    	
+	        images = Variable(images.view(-1, 14951)).cuda()
+	        labels = Variable(labels).cuda()
 
 
 
-        outputs = net(images)
-        
-        numpy_output = outputs.cpu().data.numpy()
-        
-        for idx in range(numpy_output.shape[0]):
-            max_value = np.max(numpy_output[idx])
-            max_label = np.argmax(numpy_output[idx])
-            converted_label = __label_convert(encoded_label, max_label)
-            sigmoid_value = __sigmoid(max_value)
-            softmax_value = __softmax(max_value)
-            f.write(str(idx) + ','+ str(converted_label) + ' ' + str(softmax_value) + '\n')
-        loss = criterion(outputs, labels)
+	        outputs = net(images)
+	        numpy_output = outputs.cpu().data.numpy()
+	        
+	        for idx in range(numpy_output.shape[0]):
+	            softmax_value = __softmax(numpy_output[idx])
+                max_value = np.max(softmax_value)
+                max_label = np.argmax(softmax_value)
+                converted_label = __label_convert(encoded_label, max_label)
+                f.write(str(idx) + ','+ str(converted_label) + ' ' + str(max_value) + '\n')
+	        loss = criterion(outputs, labels)
 
-        prec1, prec1 = tools.Accuracy(outputs, labels, topk=(1, 1))
-        losses.update(loss.data[0], images.size(0))
-        acc.update(prec1[0], images.size(0))
+	        prec1, prec1 = tools.Accuracy(outputs, labels, topk=(1, 1))
+	        losses.update(loss.data[0], images.size(0))
+	        acc.update(prec1[0], images.size(0))
 
 
         #if (i + 1) % 10 == 0:
@@ -162,7 +165,7 @@ def test_run():
     net = load_model('/media/hwejin/SSD_1/DATA/temp_pickles/model2.pkl',net)
     net.cuda()
     criterion = nn.CrossEntropyLoss()
-    acc = test(val_loader, net, criterion)
+    acc = test(test_loader, net, criterion)
     
 #validation_run()
 test_run()
