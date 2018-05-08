@@ -4,8 +4,12 @@ import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 from torch.autograd import Variable
 import torch.utils.data as data
-import dataload_concat as dt
-import tools
+#import dataload_concat as dt
+import sys
+sys.path.append('..')
+
+import Tools.dataload as dt
+import Tools.tools
 
 from torch.optim import lr_scheduler
 # Hyper Parameters
@@ -18,6 +22,7 @@ learning_rate = 0.001
 
 train_dataset = dt.dataload_concat('/hdd1/data_set/train/', '/hdd1/data_set/train/train', '/hdd1/data_set/encoded_label.pickle', 'train',55)
 val_dataset = dt.dataload_concat('/hdd1/data_set/val/', '/hdd1/data_set/val/val', '/hdd1/data_set/encoded_label.pickle', 'val',5)
+#val_dataset = dt.dataload_concat('/media/hwejin/SSD_1/DATA/temp_pickles', '/media/hwejin/SSD_1/DATA/temp_pickles/val', '/media/hwejin/SSD_1/DATA/temp_pickles/encoded_label.pickle', 'val',5)
 
 
 train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
@@ -27,9 +32,6 @@ val_loader = torch.utils.data.DataLoader(dataset=val_dataset,
                                            batch_size=batch_size,
                                            shuffle=False)
 
-#test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
-#                                          batch_size=batch_size,
-#                                          shuffle=False)
 
 
 # Neural Network Model (1 hidden layer)
