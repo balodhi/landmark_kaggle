@@ -26,7 +26,7 @@ def test(test_loader,save_folder):
 
     for model in modelset:
         print('using model: ',str(model))
-        checkpoint_path = os.path.join(check_point_dir, 'resnet18_' + model + '_rew.pth.tar')
+        checkpoint_path = os.path.join(check_point_dir, 'resnet18_' + model + '.pth.tar')
         CNN_model, _, _, _ = models.test_model_loader(checkpoint_path, model_name, dropouts=True)
 
         # switch to evaluate mode
@@ -53,18 +53,18 @@ test_batch_size = 128
 model_name_list = ['resnet18']
 mean = [0.4606, 0.4737, 0.4678]
 std = [0.0143, 0.0170, 0.0235]
-test_dir1 = '../train/'
+test_dir1 = '../val/'
 #test_dir2 = '../nfsdrive/landmark/FullTrainingSet/val/'
-label_dir1 = '../train_labels.txt'
+label_dir1 = '../val_labels.txt'
 #label_dir1 = '../nfsdrive/landmark/FullTrainingSet/val_labels.txt'
 
-check_point_dir = '../weights/checkpoints/withdropout/'
-#check_point_dir = '../'
-modelset = ['71', '81', '91', '101', '201', '301', '401', '501', '601']
-#modelset = ['1k']
+#check_point_dir = '../weights/checkpoints/weights/'
+check_point_dir = '../'
+#modelset = ['3', '11', '21', '31', '41', '51', '61' ]
+modelset = ['1k']
 for idx, model_name in enumerate(model_name_list):
     test_loader1 = data_caller(test_dir1, label_dir1)
-    test(test_loader1, '../vectors/train/')
+    test(test_loader1, '../vectors/val/')
 
  #   test_loader2 = data_caller(test_dir2, label_dir2)
  #   test(test_loader2, '../vectors/val/')
