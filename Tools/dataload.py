@@ -7,6 +7,7 @@ from PIL import Image
 import itertools
 from sklearn.preprocessing import normalize
 import csv
+from tqdm import tqdm
 
 class dataload(Dataset):
     def __init__(self,data_path,transform=None):
@@ -563,4 +564,37 @@ class dataload_2(Dataset):
         return len(np.unique(self.labels))
 
     def datasetSize(self):
+        return self.len
+
+class dataload_test(Dataset):
+    def __init__(self, data_path, transform=None):
+        imagefiles =  os.listdir(data_path)
+        self.data = []
+
+        files = range(0,len(imagefiles))
+        for id in tqdm(files):
+            image = str(id)+".pickle"
+            filename = os.path.join(data_path, image)
+            with open(os.path.join(data_path,filename), 'rb') as picklefile:
+                images = pickle.load(picklefile)
+            for im in images:
+                self.data.append(im)
+            #im.fp.close()
+        self.len = len(self.data)
+        #self.len = 11
+        self.transform = transform
+
+    def __getitem__(self, index):
+
+        img =  self.data[index]
+        if self.transform is not None:
+
+            img = self.transform(img)
+        img = np.array(img)
+       # print("adsfasdfasdfadsf")
+       # print(img.shape,"@@@@@@@")
+
+        return img
+
+    def __len__(self):
         return self.len
