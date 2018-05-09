@@ -604,16 +604,13 @@ class dataload_test_concat(Dataset):
         self.data = []
 
         for model in self.model_sets:
-            file_name = os.path.join(self.data_path, (str(model) + '_output'),
-                                     (str(model) + '_output' + str(i) + '.pickle'))
+            file_name = os.path.join(self.data_path, (str(model) + '_output.pickle'))
             with open(file_name, 'rb') as file:
                 file.seek(0)
                 a = pickle.load(file)
-            self.data.append(a)
-
-        self.data = np.concatenate((self.data), axis=1)
-        print(len(self.data))
-        self.len = len(self.data)
+                self.data.append(a)
+        self.data = np.concatenate((self.data), axis=2)
+        self.len = len(self.data) + len(self.skip_files)
         self.skip = 0
 
     def __getitem__(self, index):
