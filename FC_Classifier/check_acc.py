@@ -22,7 +22,7 @@ num_classes = 14951
 batch_size = 1
 
 
-skip_images = [1, 2]
+skip_list = [2651, 33645, 41595, 53389, 91057, 97840, 117013]
 '''
 #val_dataset = dt.dataload_val('/hdd1/data_set/val/', '/hdd1/data_set/sorted/sorted_val_11.txt', '/hdd1/data_set/encoded_label.pickle', 'val',5)
 val_dataset = dt.dataload_val('/media/hwejin/SSD_1/DATA/temp_pickles', 
@@ -36,7 +36,7 @@ val_loader = torch.utils.data.DataLoader(dataset=val_dataset,
 
 
 
-test_dataset = dt.dataload_val('../vectors/test', skip_list)
+test_dataset = dt.dataload_test_concat('../../vectors/test', skip_list)
 '''
 test_dataset = dt.dataload_val('/media/hwejin/SSD_1/DATA/temp_pickles', 
 	'/media/hwejin/SSD_1/DATA/temp_pickles/sorted/sorted_val_11.txt', 
@@ -48,7 +48,7 @@ test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
 
 
 #f = open('/media/hwejin/SSD_1/DATA/temp_pickles/encoded_label.pickle')
-f = open('../vectors/encoded_label.pickle')
+f = open('/hdd1/data_set/encoded_label.pickle')
 encoded_label = pickle.load(f)
 f.close()
 
@@ -113,7 +113,7 @@ def test(data_loader, net, criterion):
     loop = len(data_loader)
     
     
-    f = open('out.txt', 'w')
+    f = open('/hdd1/data_set/prediction.txt', 'w')
     f.write('id,landmarks\n')
     for i, (images) in enumerate(data_loader):
 
@@ -154,7 +154,7 @@ def test(data_loader, net, criterion):
 
 def validation_run():
     net = Net.Net(input_size, hidden_size, num_classes)
-    net = load_model('./model2.pkl',net)
+    net = load_model('../../model2.pkl',net)
     #net = load_model('/media/hwejin/SSD_1/DATA/temp_pickles/model2.pkl',net)
     net.cuda()
     criterion = nn.CrossEntropyLoss()
@@ -166,7 +166,7 @@ def validation_run():
 def test_run():
     print("test")
     net = Net.Net(input_size, hidden_size, num_classes)
-    net = load_model('./model2.pkl',net)
+    net = load_model('../../model2.pkl',net)
     #net = load_model('/media/hwejin/SSD_1/DATA/temp_pickles/model2.pkl',net)
     net.cuda()
     criterion = nn.CrossEntropyLoss()
