@@ -592,3 +592,42 @@ class dataload_test(Dataset):
 
     def __len__(self):
         return self.len
+class dataload_test_concat(Dataset):
+    def __init__(self, data_path, skip_files, transform=None):
+        self.model_sets = ['3', '11', '21', '31', '41', '51', '61', '71', '81', '91', '101', '201', '301', '401', '501',
+                           '601', '701', '801', '901', '1001', '1k']
+
+        self.transform = transform
+        self.data_path = data_path
+        self.skip_files = skip_files
+
+        self.data = []
+
+        for model in self.model_sets:
+            file_name = os.path.join(self.data_path, (str(model) + '_output'),
+                                     (str(model) + '_output' + str(i) + '.pickle'))
+            with open(file_name, 'rb') as file:
+                file.seek(0)
+                a = pickle.load(file)
+            self.data.append(a)
+
+        self.data = np.concatenate((self.data), axis=1)
+        print(len(self.data))
+        self.len = len(self.data)
+        self.skip = 0
+
+    def __getitem__(self, index):
+
+        if index in self.skip_files:
+            print("image in the skip list")
+            self.skip += 1
+            return -1
+
+        img = self.data[index - self.skip]
+        if self.transform is not None:
+            img = self.transform(img)
+        img = np.array(img)
+        return img
+
+    def __len__(self):
+        return self.len
