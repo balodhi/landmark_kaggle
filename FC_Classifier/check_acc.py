@@ -106,39 +106,32 @@ def val(data_loader, net, criterion):
     return acc.avg
 
 def test(data_loader, net, criterion):
-    losses = tools.AverageMeter()
-    acc = tools.AverageMeter()
+	losses = tools.AverageMeter()
+	acc = tools.AverageMeter()
+	net.eval()
+	loop = len(data_loader)
+	f = open('/hdd1/data_set/prediction.txt', 'w')
+	f.write('id,landmarks\n')
+	for i, (images) in enumerate(data_loader):
+		if len(iamges.shape) == 1:
+			f.write(str(idx) + ', \n')
+			print ('@#@#@#')
+		else:
+			images = Variable(images.view(-1, 14951)).cuda()
+			#labels = Variable(labels).cuda()
+			outputs = net(images)
+			numpy_output = outputs.cpu().data.numpy()
+			for idx in range(numpy_output.shape[0]):
+				softmax_value = __softmax(numpy_output[idx])
+				max_value = np.max(softmax_value)
+				max_label = np.argmax(softmax_value)
+				converted_label = __label_convert(encoded_label, max_label)
+				f.write(str(idx) + ','+ str(converted_label) + ' ' + str(max_value) + '\n')
+		    #loss = criterion(outputs, labels)
 
-    net.eval()
-    loop = len(data_loader)
-    
-    
-    f = open('/hdd1/data_set/prediction.txt', 'w')
-    f.write('id,landmarks\n')
-    for i, (images) in enumerate(data_loader):
-
-    	if len(iamges.shape) == 1:
-            f.write(str(idx) + ', \n')
-        else:
-	    images = Variable(images.view(-1, 14951)).cuda()
-	    #labels = Variable(labels).cuda()
-
-
-
-	    outputs = net(images)
-	    numpy_output = outputs.cpu().data.numpy()
-	        
-	    for idx in range(numpy_output.shape[0]):
-	        softmax_value = __softmax(numpy_output[idx])
-            max_value = np.max(softmax_value)
-            max_label = np.argmax(softmax_value)
-            converted_label = __label_convert(encoded_label, max_label)
-            f.write(str(idx) + ','+ str(converted_label) + ' ' + str(max_value) + '\n')
-	    #loss = criterion(outputs, labels)
-
-	    #prec1, prec1 = tools.Accuracy(outputs, labels, topk=(1, 1))
-	    #losses.update(loss.data[0], images.size(0))
-	    #acc.update(prec1[0], images.size(0))
+		    #prec1, prec1 = tools.Accuracy(outputs, labels, topk=(1, 1))
+		    #losses.update(loss.data[0], images.size(0))
+		    #acc.update(prec1[0], images.size(0))
 
 
     #if (i + 1) % 10 == 0:
@@ -147,8 +140,8 @@ def test(data_loader, net, criterion):
     #print('Accuracy (All): ', acc.avg.cpu().data.numpy()[0])
     #print('Losses (All): ', losses.avg)
     #print()
-    f.close()
-    return 1
+	f.close()
+	return 1
 
 
 
