@@ -1,7 +1,6 @@
 import os
 import copy
 import shutil
-import cv2
 from PIL import Image
 import pickle
 import copy
@@ -14,7 +13,7 @@ list_dir = os.listdir(root_path)
 save_path = 'save_'
 
 
-f = open('train.csv','r')
+f = open('Data/train.csv','r')
 lines = f.readlines()
 f.close()
 

@@ -441,6 +441,7 @@ class dataload_concat(Dataset):
 
 
 class DataloadFiles(Dataset):
+    #####It is used
     def __init__(self, data_path,labelfile, transform=None):
 
         list_dir = os.listdir(data_path)
@@ -593,6 +594,7 @@ class dataload_test(Dataset):
     def __len__(self):
         return self.len
 class dataload_test_concat(Dataset):
+    #######It is used.
     def __init__(self, data_path, skip_files, transform=None):
         self.model_sets = ['3', '11', '21', '31', '41', '51', '61', '71', '81', '91', '101', '201', '301', '401', '501',
                            '601', '701', '801', '901', '1001', '1k']
