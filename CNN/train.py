@@ -13,11 +13,13 @@ import time
 import sys
 import argparse
 
+import sys
+sys.path.append('../')
 import models
-import tools
-import dataload as dataload_bilal
-#import dataload_files as dataload_bilal
-import path as path_cfg
+import Tools.tools
+import Tools.dataload as dataload_bilal
+import Tools.path as path_cfg
+import Tools.normalize as nml_cfg
 
 model_name_list = ['resnet18']
 
@@ -166,8 +168,8 @@ def main(args=None):
     print ('remove_pickle : ', args.remove_pickle)    
     print ('dropouts : ', args.dropouts)    
     print ('---------------------------------------')
-    mean =[0.4606, 0.4737, 0.4678]
-    std = [0.0143, 0.0170, 0.0235]
+    mean = nml_cfg.mean
+    std = nml_cfg.std
 
 
 
@@ -193,7 +195,6 @@ def main(args=None):
                 transforms.RandomSizedCrop(224),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomVerticalFlip(),
-                #transforms.Resize(299),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean,std)
