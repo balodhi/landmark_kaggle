@@ -13,7 +13,7 @@ list_dir = os.listdir(root_path)
 save_path = 'save_'
 
 
-f = open('Data/train.csv','r')
+f = open('/media/hwejin/SSD_1/DATA/temp_pickles/train.csv','r')
 lines = f.readlines()
 f.close()
 
@@ -46,7 +46,7 @@ for idx, line in enumerate(lines):
                     
 split_list = ['3', '11', '21', '31', '41', '51', '61', '71', '81', '91', 
               '101', '201', '301', '401', '501', '601', '701', '801', '901', '1001', '100000000000']
-
+split_list = ['3']
 
 file_dict = copy.deepcopy(all_file_dict)
 if not os.path.exists(save_path):

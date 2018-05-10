@@ -62,7 +62,132 @@ class dataload(Dataset):
     def datasetSize(self):
         return self.len
 
+
+class Dataload_vector(Dataset):
+    #####It is used
+    def __init__(self, train_list, transform=None):
+        self.train_list = train_list
+        self.transform = transform
+
+
+    def __getitem__(self, index):
+
+        image_path = self.train_list[index][0]['PATH']
+        image = Image.open(image_path)
+        label = self.train_list[index][1]
+        key = self.train_list[index][0]['KEY']
+        linenumber = str(self.train_list[index][0]['LINENUMBER'])
+
+        if self.transform is not None:
+            image = self.transform(image)
+        else:
+            image = np.array(image)
+        return image, label, key, linenumber, image_path
+
+    def __len__(self):
+        return len(self.train_list)
+
+
+class dataload_test_concat(Dataset):
+    #######It is used.
+    def __init__(self, data_path, skip_files, transform=None):
+        self.model_sets = ['3', '11', '21', '31', '41', '51', '61', '71', '81', '91', '101', '201', '301', '401', '501',
+                           '601', '701', '801', '901', '1001', '1k']
+
+        self.transform = transform
+        self.data_path = data_path
+        self.skip_files = skip_files
+
+        self.data = []
+
+        for model in self.model_sets:
+            file_name = os.path.join(self.data_path, (str(model) + '_output.pickle'))
+            with open(file_name, 'rb') as file:
+                file.seek(0)
+                a = pickle.load(file)
+                self.data.append(a)
+        self.data = np.concatenate((self.data), axis=2)
+        self.len = len(self.data) + len(self.skip_files)
+        self.skip = 0
+
+    def __getitem__(self, index):
+
+        if index in self.skip_files:
+            print("image in the skip list")
+            self.skip += 1
+            return -1
+
+        img = self.data[index - self.skip]
+        if self.transform is not None:
+            img = self.transform(img)
+        img = np.array(img)
+        return img
+
+    def __len__(self):
+        return self.len
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     
 class dataload_test(Dataset):
@@ -441,7 +566,6 @@ class dataload_concat(Dataset):
 
 
 class DataloadFiles(Dataset):
-    #####It is used
     def __init__(self, data_path,labelfile, transform=None):
 
         list_dir = os.listdir(data_path)
@@ -478,6 +602,10 @@ class DataloadFiles(Dataset):
 
     def datasetSize(self):
         return self.len
+
+
+
+
 
 
 
@@ -589,43 +717,6 @@ class dataload_test(Dataset):
        # print("adsfasdfasdfadsf")
        # print(img.shape,"@@@@@@@")
 
-        return img
-
-    def __len__(self):
-        return self.len
-class dataload_test_concat(Dataset):
-    #######It is used.
-    def __init__(self, data_path, skip_files, transform=None):
-        self.model_sets = ['3', '11', '21', '31', '41', '51', '61', '71', '81', '91', '101', '201', '301', '401', '501',
-                           '601', '701', '801', '901', '1001', '1k']
-
-        self.transform = transform
-        self.data_path = data_path
-        self.skip_files = skip_files
-
-        self.data = []
-
-        for model in self.model_sets:
-            file_name = os.path.join(self.data_path, (str(model) + '_output.pickle'))
-            with open(file_name, 'rb') as file:
-                file.seek(0)
-                a = pickle.load(file)
-                self.data.append(a)
-        self.data = np.concatenate((self.data), axis=2)
-        self.len = len(self.data) + len(self.skip_files)
-        self.skip = 0
-
-    def __getitem__(self, index):
-
-        if index in self.skip_files:
-            print("image in the skip list")
-            self.skip += 1
-            return -1
-
-        img = self.data[index - self.skip]
-        if self.transform is not None:
-            img = self.transform(img)
-        img = np.array(img)
         return img
 
     def __len__(self):

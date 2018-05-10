@@ -14,8 +14,12 @@ import torch.nn.init as init
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 import torch.nn.parallel
+
+import sys
+sys.path.append('../')
+
 import os
-import path as path_cfg
+import Tools.path as path_cfg
 
 
 
