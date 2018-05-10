@@ -20,7 +20,7 @@ class Dataload_CNN(Dataset):
         list_dir = sorted(list_dir)
 
 
-        with open(os.path.join(train_val_set_dir, 'val_set.pickle')) as f:
+        with open(os.path.join(train_val_set_dir, 'val_set.pickle'), 'rb') as f:
             val_set = pickle.load(f)
         val_keys = []
         for val in val_set:

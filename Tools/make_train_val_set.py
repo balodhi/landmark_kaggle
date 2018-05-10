@@ -3,9 +3,9 @@ import pickle
 import copy
 from random import shuffle
 
-root_path = '/media/hwejin/SSD_1/Code/Github/landmark_kaggle/here_'
-out_path = '/media/hwejin/SSD_1/Code/Github/landmark_kaggle/'
-f = open('/media/hwejin/SSD_1/DATA/landmark/data/train.csv','r')
+root_path = '../../landmark_data/allinone'
+out_path = '../../landmark_data/csv'
+f = open('../../landmark_data/csv/train.csv','r')
 lines = f.readlines()
 f.close()
 
@@ -77,10 +77,10 @@ for split in split_list:
 shuffle(train_list)
 shuffle(val_list)
 
-f = open(os.path.join(out_path,'train_set.pickle'), 'w')
+f = open(os.path.join(out_path,'train_set.pickle'), 'wb')
 pickle.dump(train_list, f)
 f.close()
         
-f = open(os.path.join(out_path,'val_set.pickle'), 'w')
+f = open(os.path.join(out_path,'val_set.pickle'), 'wb')
 pickle.dump(val_list, f)
 f.close()

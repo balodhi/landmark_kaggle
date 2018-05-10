@@ -138,7 +138,7 @@ def parse_args(args):
     parser.add_argument('--dropouts',            help='Apply multiple dropouts', type=tools.str2bool, nargs='?',const=True, default=True)
     parser.add_argument('--shuffle_pickle',      help='Apply shuffle when make pickles', type=tools.str2bool, nargs='?',const=True, default=False)
     parser.add_argument('--remove_pickle',       help='Remove pikles(train, val) after training.', type=tools.str2bool, nargs='?',const=True, default=True)
-    parser.add_argument('--train_val_set_dir', 	 help='Where is the train_set, val_set files?', type=str, default='/media/hwejin/SSD_1/DATA/landmark/data')
+    parser.add_argument('--train_val_set_dir', 	 help='Where is the train_set, val_set files?', type=str, default='../../landmark_data/csv')
 
     return parser.parse_args(args)
 
