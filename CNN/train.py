@@ -16,8 +16,8 @@ import argparse
 import sys
 sys.path.append('../')
 import models
-import Tools.tools
-import Tools.dataload as dataload_bilal
+import Tools.tools as tools
+import Tools.dataload as dataload_landmark
 import Tools.path as path_cfg
 import Tools.normalize as nml_cfg
 
@@ -32,15 +32,12 @@ def train(train_loader, model, criterion, optimizer, epoch):
     end = time.time()
     
     
-    for i, (img,label) in enumerate(train_loader):
+    for i, (img,label, og_label, _, _) in enumerate(train_loader):
         target = label.cuda(async=True)
         
         
         img = Variable(img).cuda()
         label = Variable(label).cuda()
-
-        
-        
         output = model(img)
         loss = criterion(output,label)
         
@@ -68,8 +65,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'Accuracy {acc.val:.3f} ({acc.avg:.3f})'.format(
                       epoch, i, len(train_loader), batch_time=batch_time, loss=losses, acc=acc))
-            
-            
+    return acc.avg     
             
 def val(val_loader, model, criterion):
     batch_time = tools.AverageMeter()
@@ -125,24 +121,24 @@ def parse_args(args):
     
     parser.add_argument('--train_batch_size',    help='Size of the batches for train.', default=128, type=int)
     parser.add_argument('--val_batch_size',      help='Size of the batches for validation.', default=128, type=int)
-    parser.add_argument('--validation',          help='Do Validation.', type=tools.str2bool, nargs='?',const=True, default=True)
+    parser.add_argument('--validation',          help='Do Validation.', type=tools.str2bool, nargs='?',const=True, default=False)
 
     parser.add_argument('--learning_rate',       help='Start learning rate.', type=float, default=0.0002)
-    parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=10)
+    parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=20)
 
 
-    parser.add_argument('--rolling_weight_path', help='Which data want to use for rolling effect.', type=str, default='TEST')
-    parser.add_argument('--rolling_effect',      help='Applying rolling effect.', type=tools.str2bool, nargs='?',const=True, default=False)
+    parser.add_argument('--rolling_weight_path', help='Which data want to use for rolling effect.', type=str, default='701')
+    parser.add_argument('--rolling_effect',      help='Applying rolling effect.', type=tools.str2bool, nargs='?',const=True, default=True)
 
 
     parser.add_argument('--keep_train',          help='Keep training on previouse snapshot.', type=tools.str2bool, nargs='?',const=True, default=True)
     parser.add_argument('--pretrain_imagenet',   help='Use pretrained weight on Imagenet.', type=tools.str2bool, nargs='?',const=True, default=True)
 
-    parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='TEST')
+    parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='701')
     parser.add_argument('--dropouts',            help='Apply multiple dropouts', type=tools.str2bool, nargs='?',const=True, default=True)
     parser.add_argument('--shuffle_pickle',      help='Apply shuffle when make pickles', type=tools.str2bool, nargs='?',const=True, default=False)
     parser.add_argument('--remove_pickle',       help='Remove pikles(train, val) after training.', type=tools.str2bool, nargs='?',const=True, default=True)
-
+    parser.add_argument('--train_val_set_dir', 	 help='Where is the train_set, val_set files?', type=str, default='/media/hwejin/SSD_1/DATA/landmark/data')
 
     return parser.parse_args(args)
 
@@ -179,65 +175,40 @@ def main(args=None):
     # Make snapshot directory
     tools.directoryMake(path_cfg.snapshot_root_path)
     
-
+    
     # Divide pickle file and make new file and set train, val path seperatly.
     if args.validation:
         train_dir, val_dir = tools.divideDataset(os.path.join(path_cfg.data_root_path, args.data_type), args.shuffle_pickle)
     else:
         train_dir = os.path.join(path_cfg.data_root_path, args.data_type)
         val_dir = os.path.join(path_cfg.data_root_path, args.data_type)        
-
+	
 
 
     # Make Train, Val data_loader
-    train_data = dataload_bilal.dataload(train_dir, transforms.Compose([
+    train_data = dataload_landmark.Dataload_CNN(train_dir, args.train_val_set_dir, transforms.Compose([
                 transforms.Resize(299),
-                transforms.RandomSizedCrop(224),
+                transforms.RandomResizedCrop(224),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomVerticalFlip(),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean,std)
                 ]))
-    num_of_class = train_data.nClasses()
-    train_data = ds.ImageFolder('../11/AugmentedTrainingSet/' , transforms.Compose([
-           #transforms.Resize(256),
-           transforms.RandomResizedCrop(224),
-           transforms.RandomHorizontalFlip(),
-           transforms.ToTensor(),
-           ]))
+
+
 
     train_loader = data.DataLoader(train_data, batch_size=args.train_batch_size,
                                 shuffle=True,drop_last=False)
-
-
-#    val_data = dataload_bilal.dataload(val_dir, transforms.Compose([
-#                #transforms.Resize(299),
-#                #transforms.RandomSizedCrop(224),
-#                #transforms.Resize(299),
-#                #transforms.RandomHorizontalFlip(),
-#                transforms.ToTensor(),
-#                transforms.Normalize(mean,std)
-#                ]))
-    
-    val_data = ds.ImageFolder('../11/validation/' , transforms.Compose([
-           #transforms.Resize(256),
-#           transforms.RandomResizedCrop(224),
-#           transforms.RandomHorizontalFlip(),
-           transforms.ToTensor(),
-           ]))
-
+    '''
     val_loader = data.DataLoader(val_data, batch_size=args.val_batch_size,
                                 shuffle=False,drop_last=False)
 
+    '''
     
-    
-    
-    # Finally we got num_of_classes
-    #num_of_class = train_data.nClasses()
 
 
-
+    num_of_class = train_data.nClasses()
     print ('----------------Data-------------------')
     print ('num_of_class : ', num_of_class)
     print ('num_of_images : ', len(train_data))
@@ -281,15 +252,14 @@ def main(args=None):
     
         best_prec1 = 0
         for epoch in range(args.epochs):
-            train(train_loader, CNN_model, CNN_criterion, CNN_optimizer, epoch)
-            prec1 = val(val_loader, CNN_model, CNN_criterion)
+            prec_train = train(train_loader, CNN_model, CNN_criterion, CNN_optimizer, epoch)
+            #prec_val = val(val_loader, CNN_model, CNN_criterion)
             
             
             # Learning rate scheduler 
             CNN_scheduler.step()
-            print ('    lr : ', CNN_scheduler.get_lr())
             
-            
+            prec1 = prec_train
             # Model weight will be saved based on it's validation performance
             is_best = prec1 > best_prec1
             best_prec1 = max(prec1, best_prec1)
@@ -309,3 +279,14 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
+
+
+    '''
+    train_data = ds.ImageFolder('../11/AugmentedTrainingSet/' , transforms.Compose([
+           #transforms.Resize(256),
+           transforms.RandomResizedCrop(224),
+           transforms.RandomHorizontalFlip(),
+           transforms.ToTensor(),
+           ]))
+	'''

@@ -8,59 +8,71 @@ import itertools
 from sklearn.preprocessing import normalize
 import csv
 from tqdm import tqdm
+from sklearn import preprocessing
 
-class dataload(Dataset):
-    def __init__(self,data_path,transform=None):
+class Dataload_CNN(Dataset):
+    def __init__(self,data_path, train_val_set_dir,transform=None):
         #it accepts the directory as input and read all the pickle files
         #data_path is the directory path of pickle files
         data=[]
         list_dir = os.listdir(data_path)
         list_dir.sort()
         list_dir = sorted(list_dir)
-        self.transform = transform
+
+
+        with open(os.path.join(train_val_set_dir, 'val_set.pickle')) as f:
+            val_set = pickle.load(f)
+        val_keys = []
+        for val in val_set:
+            val_keys.append(str(val[0]['KEY']))
+
+
+
+
         for file in list_dir:
             
             if file.endswith('.pickle'):
                 with open(os.path.join(data_path,file), 'rb') as pickleFile:
                     pickleFile.seek(0)
-                    a = pickle.load(pickleFile)
-                    data.append(a)
+                    aa = pickle.load(pickleFile)
+                    data.append(aa)
         
-        labs = []
+        self.labs = []
+        self.KEY = []
+        self.LINENUMBER = []
         self.images=[]
-        
         self.transform = transform
+
+
         for picklefile in data:
             for point in picklefile:
-                labs.append(point[0])
-                self.images.append(point[1])
-                #print(point[0])
+                key = str(point[0]['KEY'])
 
-        self.labels=self.makelabels(labs)
-        self.len = len(self.labels)
-        #self.nClases = len(np.unique(self.labels))
-            
+                if key not in val_keys:
+
+                    self.KEY.append(str(point[0]['KEY']))
+                    self.LINENUMBER.append(str(point[0]['LINENUMBER']))
+                    self.images.append(point[1])
+                    self.labs.append(str(point[2]))
+        self.labels = self.makelabels(self.labs)
+
     def __getitem__(self,index):
         
         if self.transform is not None:
             img = self.transform(self.images[index])
         else:
-            
             img= np.array(self.images[index])
             
-        return img, self.labels[index]
+        return img, self.labels[index], self.labs[index], self.KEY[index], self.LINENUMBER[index]
     
     def __len__(self):
-        return self.len
+        return len(self.labels)
     def makelabels(self,lab):
-        from sklearn import preprocessing
         le = preprocessing.LabelEncoder()
         le.fit(lab)
         return le.transform(lab)
     def nClasses(self):
         return len(np.unique(self.labels))
-    def datasetSize(self):
-        return self.len
 
 
 class Dataload_vector(Dataset):
@@ -86,6 +98,7 @@ class Dataload_vector(Dataset):
 
     def __len__(self):
         return len(self.train_list)
+
 
 
 class dataload_test_concat(Dataset):

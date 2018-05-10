@@ -31,7 +31,6 @@ def model_setter(model_name, learning_rate=0.001, output_size=2, usePretrained=T
     if model_name == 'resnet18':
         model = models.resnet18(pretrained=usePretrained)
         num_ftrs = model.fc.in_features
-        
         if dropouts:
             en = EnsembleDropout()
             model.fc = nn.Sequential(en, nn.Linear(num_ftrs, output_size))
