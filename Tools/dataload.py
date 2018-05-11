@@ -50,10 +50,12 @@ class Dataload_CNN(Dataset):
 
                 if key not in val_keys:
 
-                    self.KEY.append(str(point[0]['KEY']))
-                    self.LINENUMBER.append(str(point[0]['LINENUMBER']))
-                    self.images.append(point[1])
-                    self.labs.append(str(point[2]))
+                    #print np.array(point[1]).shape
+                    if len(np.array(point[1]).shape) == 3 and np.array(point[1]).shape[2] == 3:
+                        self.KEY.append(str(point[0]['KEY']))
+                        self.LINENUMBER.append(str(point[0]['LINENUMBER']))
+                        self.images.append(point[1])
+                        self.labs.append(str(point[2]))
 
         self.labels = self.makelabels(self.labs)
 

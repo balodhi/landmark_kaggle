@@ -118,7 +118,7 @@ def parse_args(args):
     parser.add_argument('--validation',          help='Do Validation.', type=tools.str2bool, nargs='?',const=True, default=False)
 
     parser.add_argument('--learning_rate',       help='Start learning rate.', type=float, default=0.0002)
-    parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=20)
+    parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=10)
 
 
     parser.add_argument('--rolling_weight_path', help='Which data want to use for rolling effect.', type=str, default='701')

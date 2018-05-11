@@ -9,7 +9,7 @@ from random import shuffle
 import numpy as np
 
 #where the og data is ?
-og_path = '/media/hwejin/HDD_1/KAGGLE/combine_landmark')
+og_path = '/media/hwejin/HDD_1/KAGGLE/combine_landmark'
 
 
 #root path
@@ -20,7 +20,17 @@ out_root_path = '/media/hwejin/HDD_1/KAGGLE/'
 out_pickle_path = os.path.join(out_root_path, 'pickle')
 if not os.path.exists(out_pickle_path):
     os.makedirs(out_pickle_path)
+
+
+
+
+#out_img_path = os.path.join(out_root_path, 'img')
+#if not os.path.exists(out_img_path):
+#    os.makedirs(out_img_path)
     
+
+
+
     
 out_csv_path = os.path.join(out_root_path, 'csv')
 if not os.path.exists(out_csv_path):
@@ -35,7 +45,7 @@ f.close()
 
 all_file_dict = {}
 
-for idx, line in enumerate(lines[:10]):
+for idx, line in enumerate(lines):
     if idx == 0:
         continue
     else:
@@ -58,7 +68,16 @@ for idx, line in enumerate(lines[:10]):
 
 
 split_list = ['3', '11', '21', '31', '41', '51', '61', '71', '81', '91', 
-              '101', '201', '301', '401', '501', '601', '701', '801', '901', '1001', '100000000000']                
+              '101', '201', '301', '401', '501', '601', '701', '801', '901', '1001', '100000000000']      
+
+
+
+
+#split_list= [ '701', '801']       
+
+
+'''
+
 file_dict = copy.deepcopy(all_file_dict)
 
 for split in split_list:
@@ -71,11 +90,18 @@ for split in split_list:
     del_key_list = []
     for dict_idx, key in enumerate(file_dict):
         if len(file_dict[key]) < int(split):
+        #if len(file_dict[key]) < int(split) and len(file_dict[key]) > int(split) - 100:
             for idx, info in enumerate(file_dict[key]):
                 try:
                     img = Image.open(info['PATH'])
+                    img = img.resize((224,224), Image.ANTIALIAS)
                     image_list.append((info, img, key))
                     line_num = info['LINENUMBER']
+
+
+
+
+                    img.convert('RGB').save(os.path.join(out_img_path, str(key) +  '_' + str(info['KEY']) + '.jpg'))
                 except Exception as e:
                     print (info, e)
                     #dummy_img = np.zeros([224,224,3],dtype=np.uint8)
@@ -109,7 +135,7 @@ for split in split_list:
         save_cnt += 1
         image_list = []
 
-
+'''
 
 file_dict = copy.deepcopy(all_file_dict)
 
@@ -159,23 +185,22 @@ for dict_idx, key in enumerate(file_dict):
                     
         del_key_list.append(key)
     else:
-        if len(file_dict[key]) < int(split):
-            for idx, info in enumerate(file_dict[key]):
-                info['HOWMANYIMAGES'] = len(file_dict[key])
-                if idx < len(file_dict[key]) * 0.9:
-                    train_list.append((info, key))
-                else:
-                    val_list.append((info, key))
+        for idx, info in enumerate(file_dict[key]):
+            info['HOWMANYIMAGES'] = len(file_dict[key])
+            if idx < len(file_dict[key]) * 0.9:
+                train_list.append((info, key))
+            else:
+                val_list.append((info, key))
                     
                     
-            if key not in train_label:
-                train_label.append(key)
-            if key not in val_label:
-                val_label.append(key)
-            del_key_list.append(key)
+        if key not in train_label:
+            train_label.append(key)
+        if key not in val_label:
+            val_label.append(key)
+        del_key_list.append(key)
             
-for key in del_key_list:
-    file_dict.pop(key)
+    #for key in del_key_list:
+    #    file_dict.pop(key)
         
 shuffle(train_list)
 shuffle(val_list)
