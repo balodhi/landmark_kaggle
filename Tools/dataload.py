@@ -54,6 +54,7 @@ class Dataload_CNN(Dataset):
                     self.LINENUMBER.append(str(point[0]['LINENUMBER']))
                     self.images.append(point[1])
                     self.labs.append(str(point[2]))
+
         self.labels = self.makelabels(self.labs)
 
     def __getitem__(self,index):

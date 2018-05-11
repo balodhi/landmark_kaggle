@@ -32,29 +32,23 @@ def train(train_loader, model, criterion, optimizer, epoch):
     end = time.time()
     
     
-    for i, (img,label, og_label, _, _) in enumerate(train_loader):
+    for i, (img, label, og_label, key, linenumber) in enumerate(train_loader):
         target = label.cuda(async=True)
-        
-        
         img = Variable(img).cuda()
         label = Variable(label).cuda()
         output = model(img)
         loss = criterion(output,label)
         
-        
-        
-        # measure accuracy and record loss
-        prec1, prec1 = tools.Accuracy(output.data, target, topk=(1, 1))
-        losses.update(loss.data[0], img.size(0))
-        acc.update(prec1[0], img.size(0))
-        
-        
-        
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         
-        
+
+
+        # measure accuracy and record loss
+        prec1, prec1 = tools.Accuracy(output.data, target, topk=(1, 1))
+        losses.update(loss.data[0], img.size(0))
+        acc.update(prec1[0], img.size(0))        
         
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -138,8 +132,7 @@ def parse_args(args):
     parser.add_argument('--dropouts',            help='Apply multiple dropouts', type=tools.str2bool, nargs='?',const=True, default=True)
     parser.add_argument('--shuffle_pickle',      help='Apply shuffle when make pickles', type=tools.str2bool, nargs='?',const=True, default=False)
     parser.add_argument('--remove_pickle',       help='Remove pikles(train, val) after training.', type=tools.str2bool, nargs='?',const=True, default=True)
-    parser.add_argument('--train_val_set_dir', 	 help='Where is the train_set, val_set files?', type=str, default='../../landmark_data/csv')
-
+    
     return parser.parse_args(args)
 
 
@@ -167,10 +160,6 @@ def main(args=None):
     mean = nml_cfg.mean
     std = nml_cfg.std
 
-
-
-
-
     
     # Make snapshot directory
     tools.directoryMake(path_cfg.snapshot_root_path)
@@ -186,26 +175,17 @@ def main(args=None):
 
 
     # Make Train, Val data_loader
-    train_data = dataload_landmark.Dataload_CNN(train_dir, args.train_val_set_dir, transforms.Compose([
+    train_data = dataload_landmark.Dataload_CNN(train_dir, path_cfg.train_val_set_dir, transforms.Compose([
                 transforms.Resize(299),
                 transforms.RandomResizedCrop(224),
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomVerticalFlip(),
-                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean,std)
                 ]))
 
-
-
     train_loader = data.DataLoader(train_data, batch_size=args.train_batch_size,
                                 shuffle=True,drop_last=False)
-    '''
-    val_loader = data.DataLoader(val_data, batch_size=args.val_batch_size,
-                                shuffle=False,drop_last=False)
-
-    '''
-    
 
 
     num_of_class = train_data.nClasses()
@@ -237,7 +217,8 @@ def main(args=None):
             CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = models.model_setter(model_name, 
                                                                               learning_rate=args.learning_rate, 
                                                                               output_size=num_of_class,
-                                                                              usePretrained=args.pretrain_imagenet,dropouts=args.dropouts)
+                                                                              usePretrained=args.pretrain_imagenet,
+                                                                              dropouts=args.dropouts)
             
             print ('Scratch model')
             # keep training on previouse epoch.
@@ -253,9 +234,8 @@ def main(args=None):
         best_prec1 = 0
         for epoch in range(args.epochs):
             prec_train = train(train_loader, CNN_model, CNN_criterion, CNN_optimizer, epoch)
-            #prec_val = val(val_loader, CNN_model, CNN_criterion)
-            
-            
+
+
             # Learning rate scheduler 
             CNN_scheduler.step()
             
@@ -279,14 +259,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
-
-
-    '''
-    train_data = ds.ImageFolder('../11/AugmentedTrainingSet/' , transforms.Compose([
-           #transforms.Resize(256),
-           transforms.RandomResizedCrop(224),
-           transforms.RandomHorizontalFlip(),
-           transforms.ToTensor(),
-           ]))
-	'''

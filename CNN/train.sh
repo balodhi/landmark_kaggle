@@ -21,3 +21,7 @@ python train.py --data_type '3' --rolling_weight_path 'resnet18_11_rew.pth.tar'
 
 
 
+#python train.py --data_type '1001' 
+#python train.py --data_type '801' --train_val_set_dir '/media/hwejin/SSD_1/DATA/landmark/data'
+#python train.py --data_type '701' --rolling_weight_path 'resnet18_801_rew.pth.tar' --train_val_set_dir '/media/hwejin/SSD_1/DATA/landmark/data'
+
