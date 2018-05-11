@@ -78,12 +78,12 @@ for split in split_list:
                     line_num = info['LINENUMBER']
                 except Exception as e:
                     print (info, e)
-                    dummy_img = np.zeros([224,224,3],dtype=np.uint8)
-                    dummy_img.fill(255)
-                    dummy_img = Image.fromarray(np.uint8(dummy_img))
+                    #dummy_img = np.zeros([224,224,3],dtype=np.uint8)
+                    #dummy_img.fill(255)
+                    #dummy_img = Image.fromarray(np.uint8(dummy_img))
                     
-                    image_list.append((info, dummy_img, key))
-                    line_num = info['LINENUMBER']
+                    #image_list.append((info, dummy_img, key))
+                    #line_num = info['LINENUMBER']
                     
                     
                     
