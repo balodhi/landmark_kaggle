@@ -1,6 +1,3 @@
-python train.py --data_type '701'
-
-
 
 python train.py --data_type '1001'
 python train.py --data_type '901' --rolling_weight_path 'resnet18_1001_rew.pth.tar'
@@ -22,7 +19,6 @@ python train.py --data_type '31' --rolling_weight_path 'resnet18_41_rew.pth.tar'
 python train.py --data_type '21' --rolling_weight_path 'resnet18_31_rew.pth.tar'
 python train.py --data_type '11' --rolling_weight_path 'resnet18_21_rew.pth.tar'
 python train.py --data_type '3' --rolling_weight_path 'resnet18_11_rew.pth.tar'
-
 
 
 #python train.py --data_type '1001' 

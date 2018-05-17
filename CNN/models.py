@@ -87,7 +87,8 @@ def save_checkpoint(state, is_best, model_name):
     filename = os.path.join(path_cfg.snapshot_root_path, model_name + '.pth.tar')
     torch.save(state, filename)
 
-def load_checkpoint(model, path):
+def load_checkpoint(model, model_name):
+    path = os.path.join(path_cfg.snapshot_root_path, model_name + '.pth.tar')
     if os.path.exists(path):
         checkpoint = torch.load(path)
         start_epoch = checkpoint['epoch']
