@@ -120,15 +120,15 @@ def parse_args(args):
     parser.add_argument('--val_batch_size',      help='Size of the batches for validation.', default=128, type=int)
     parser.add_argument('--validation',          help='Do Validation.', type=tools.str2bool, nargs='?',const=True, default=False)
 
-    parser.add_argument('--learning_rate',       help='Start learning rate.', type=float, default=0.001)
+    parser.add_argument('--learning_rate',       help='Start learning rate.', type=float, default=0.0005)
     parser.add_argument('--epochs',              help='Number of epochs to train.', type=int, default=10)
 
     parser.add_argument('--keep_train',          help='Keep training on previouse snapshot.', type=tools.str2bool, nargs='?',const=True, default=True)
     parser.add_argument('--pretrain_imagenet',   help='Use pretrained weight on Imagenet.', type=tools.str2bool, nargs='?',const=True, default=True)
 
-    parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='ALL')
+    parser.add_argument('--data_type',           help='Which data do you want to train.', type=str, default='landmark_data_single')
     parser.add_argument('--dropouts',            help='Apply multiple dropouts', type=tools.str2bool, nargs='?',const=False, default=False)
-    parser.add_argument('--weighted_loss',       help='Apply weighted loss', type=tools.str2bool, nargs='?',const=True, default=True)
+    parser.add_argument('--weighted_loss',       help='Apply weighted loss', type=tools.str2bool, nargs='?',const=True, default=False)
     return parser.parse_args(args)
 
 
@@ -141,7 +141,7 @@ def main(args=None):
     print ('--------------Arguments----------------')
     print ('data_type : ', args.data_type)
     print ('learning_rate : ', args.learning_rate)
-    print ('do_validation : ', args.validation)
+    print ('validation : ', args.validation)
     print ('epochs : ', args.epochs)
     print ('keep_train : ', args.keep_train)
     print ('pretrain_imagenet : ', args.pretrain_imagenet)
@@ -157,8 +157,9 @@ def main(args=None):
     # Make snapshot directory
     tools.directoryMake(path_cfg.snapshot_root_path)
 
+    train_dir = os.path.join(path_cfg.data_root_path, 'train', args.data_type)
     train_dir = os.path.join(path_cfg.data_root_path, args.data_type)
-    val_dir = os.path.join(path_cfg.data_root_path, args.data_type)        
+    val_dir = os.path.join(path_cfg.data_root_path, 'val', args.data_type)        
 	
 
 
@@ -171,6 +172,7 @@ def main(args=None):
                 transforms.ToTensor(),
                 transforms.Normalize(mean,std)
                 ]))
+    print train_data.classes
     num_of_class = len(os.listdir(train_dir))
     train_loader = data.DataLoader(train_data, batch_size=args.train_batch_size,
                                 shuffle=True,drop_last=False)
@@ -193,15 +195,14 @@ def main(args=None):
 
 
     # Make Weight
-    weight = make_weight(train_dir, args.weighted_losse)
+    weight = make_weight(train_dir, args.weighted_loss)
 
 
     for model_idx, model_name in enumerate(model_name_list):
         
 
         save_model_name = model_name +'_'+ args.data_type
-        CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = 
-        model_setter(
+        CNN_model, CNN_optimizer, CNN_criterion, CNN_scheduler = model_setter(
             model_name, 
             weight,
             learning_rate=args.learning_rate, 
@@ -298,8 +299,8 @@ def make_weight(path, doMake=True):
     weight = np.ones(len(listdir))
     if doMake:
         sum_all = 0
-        for idx in range(len(listdir)):
-            cnt =  len(os.listdir(os.path.join(root_dir, str(idx))))
+        for idx, filename in enumerate(listdir):
+            cnt =  len(os.listdir(os.path.join(root_dir, str(filename))))
             sum_all += cnt
             weight[idx] = cnt
         weight = 1. - (weight / sum_all)
