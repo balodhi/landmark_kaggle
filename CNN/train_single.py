@@ -172,7 +172,6 @@ def main(args=None):
                 transforms.ToTensor(),
                 transforms.Normalize(mean,std)
                 ]))
-    print train_data.classes
     num_of_class = len(os.listdir(train_dir))
     train_loader = data.DataLoader(train_data, batch_size=args.train_batch_size,
                                 shuffle=True,drop_last=False)
@@ -190,12 +189,12 @@ def main(args=None):
     print ('num_of_class : ', num_of_class)
     print ('num_of_images : ', len(train_data))
     print ('---------------------------------------\n\n')
-
+    class_list = train_data.classes
 
 
 
     # Make Weight
-    weight = make_weight(train_dir, args.weighted_loss)
+    weight = make_weight(train_dir, class_list, args.weighted_loss)
 
 
     for model_idx, model_name in enumerate(model_name_list):
@@ -293,15 +292,16 @@ def model_setter(model_name, weight, learning_rate=0.001, output_size=2, usePret
     return model, optimizer, criterion, scheduler
 
 
-def make_weight(path, doMake=True):
+def make_weight(path, class_list, doMake=True):
     root_dir = path
     listdir = os.listdir(root_dir)
     weight = np.ones(len(listdir))
     if doMake:
         sum_all = 0
-        for idx, filename in enumerate(listdir):
+        for filename in listdir:
             cnt =  len(os.listdir(os.path.join(root_dir, str(filename))))
             sum_all += cnt
+            idx = class_list.index(filename)
             weight[idx] = cnt
         weight = 1. - (weight / sum_all)
     weight.astype(float)
